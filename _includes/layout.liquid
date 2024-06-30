@@ -1,0 +1,30 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="/css/body.css">
+  </head>
+  <body class="grid gap no-margin">
+    <header id="site_header">
+      <a href="#main" class="screen-reader-text">Skip to main content</a>
+    </header>
+    <nav aria-label="blog navigation">
+      <a href="/" aria-current="page">Home🏠</a>
+      <a href="/">Resumé💼</a>
+      <a href="">Post✒️</a>
+      <a href="/notes">Notes📝</a>
+      <a href="/">GitHub</a>
+    </nav>
+    <main id="main" class="grid gap">
+      <article>
+        {{ content }}
+      </article>
+    </main>
+    <footer id="site_footer">
+      <p>© 2024 pehcy a.k.a Murphy the shark</p>
+      <p>Made with 🍦vanilla JavaScript + 🎈🐁Eleventy.
+      </p>
+    </footer>
+  </body>
+</html>
