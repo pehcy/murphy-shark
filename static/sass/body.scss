@@ -129,6 +129,10 @@ nav {
     border-bottom: 2px solid;
 }
 
+nav a {
+    padding: .5em;
+}
+
 body::before {
     content: "";
     background: $gradient;
