@@ -5,6 +5,10 @@ module.exports = function(eleventyConfig) {
 
     eleventyConfig.addPassthroughCopy({ "img/": "img" });
     eleventyConfig.addPassthroughCopy({ "static/fonts": "static/fonts" });
+
+    eleventyConfig.addLayoutAlias("default", "layouts/default.liquid");
+    eleventyConfig.addLayoutAlias("resume", "layouts/resume_layout.liquid");
+
     return {
         templateFormats: [
             "md",
