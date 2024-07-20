@@ -156,10 +156,6 @@ nav {
 }
 */
 
-nav a {
-    padding: .5em;
-}
-
 /*
 body::before {
     content: "";
@@ -176,7 +172,7 @@ nav a {
     color: inherit;
     text-decoration: none;
     text-align: center;
-    padding: .5em;
+    // padding: .5em;
     margin: 0 4px;
     // border: 1px solid rgba(0, 0, 0, 0.088);
 }
@@ -214,16 +210,17 @@ time {
     z-index: 30;
     width: 100%;
     align-items: stretch;
+    border-bottom: 1px solid #ebeaeb;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
 
 .navbar-rail { 
     margin: 0 auto;
     position: relative;
-    border-bottom: 1px solid #ebeaeb;
+    max-width: 960px;
     //background-color: white;
     display: flex;
     padding: 6.067256px 0;
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
 
 .navbar-end {
@@ -231,6 +228,10 @@ time {
     margin-left: auto;
     display: flex;
     padding: 0.5rem;
+}
+
+.navbar-end > a {
+    padding: 0 0.5rem;
 }
 
 .navbar-menu {
