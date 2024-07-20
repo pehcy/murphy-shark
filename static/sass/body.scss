@@ -55,6 +55,15 @@ body {
     text-align: left;
 }
 
+main {
+    grid-template-columns: 1fr minmax(calc(100vw - 66ch), 66ch) 1fr;
+    grid-template-rows: auto auto 1fr auto;
+}
+
+main > article {
+    grid-column: 2;
+}
+
 .side-title {
     font-size: 11vw;
     font-family: 'Lexend Semi Bold', sans-serif;
@@ -187,6 +196,7 @@ time {
     position: fixed;
     z-index: 30;
     width: 100%;
+    align-items: stretch;
 }
 
 .navbar-rail {
@@ -195,12 +205,15 @@ time {
     border-bottom: 1px solid #ebeaeb;
     background-color: white;
     display: flex;
+    padding: 6.067256px 0;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
 
 .navbar-end {
     justify-content: flex-end;
     margin-left: auto;
     display: flex;
+    padding: 0.5rem;
 }
 
 .navbar-menu {
