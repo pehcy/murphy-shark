@@ -42,11 +42,3 @@
     line-height: 1.25rem;
 }
 
-.big-title {
-    --fluid-type: clamp(4.25rem, -0.625rem + 8.125vw, 7.5rem);
-    font-size: var(--fluid-type, 2.3em);
-    text-transform: uppercase;
-    color: #222;
-    margin: 0 0 0.5em;
-    font-weight: 900;
-}
