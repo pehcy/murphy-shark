@@ -264,7 +264,8 @@ $burgerStripesLineHeight: 6px, 1px, -4px;
 @for $i from 1 through 3 {
     .hamburger span:nth-child(#{$i}) {
         $height: nth($burgerStripesLineHeight, $i);
-        top: calc(30% - $height);
+        top: calc(45% - $height);
+        left: calc(50% - 8px);
         width: 16px;
         height: 1px;
         background-color: currentColor;
