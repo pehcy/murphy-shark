@@ -227,22 +227,47 @@ time {
     max-width: 960px;
     //background-color: white;
     display: flex;
-    padding: 6.067256px 0;
+    // padding: 6.067256px 0;
+}
+
+.navbar-rail > h1 {
+    margin: auto;
 }
 
 .navbar-end {
     justify-content: flex-end;
     margin-left: auto;
     display: flex;
-    padding: 0.5rem;
 }
 
 .navbar-end > a {
-    padding: 0 0.5rem;
+    padding: 0.5rem;
 }
 
 .navbar-menu {
     margin-right: -.75rem;
     flex-grow: 1;
     flex-shrink: 0;
+}
+
+.hamburger {
+    color: #4a4a4a;
+    cursor: pointer;
+    height: 3.25rem;
+    width: 3.25rem;
+    position: relative;
+    // margin-left: auto;
+}
+
+$burgerStripesLineHeight: 6px, 1px, -4px;
+
+@for $i from 1 through 3 {
+    .hamburger span:nth-child(#{$i}) {
+        $height: nth($burgerStripesLineHeight, $i);
+        top: calc(30% - $height);
+        width: 16px;
+        height: 1px;
+        background-color: currentColor;
+        position: absolute;
+    }
 }
