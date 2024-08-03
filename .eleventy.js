@@ -1,3 +1,5 @@
+const pluginWebc = require("@11ty/eleventy-plugin-webc");
+
 module.exports = function(eleventyConfig) {
     eleventyConfig.setBrowserSyncConfig({
         files: './_site/css/**/*.css'
@@ -8,6 +10,13 @@ module.exports = function(eleventyConfig) {
 
     eleventyConfig.addLayoutAlias("default", "layouts/default.liquid");
     eleventyConfig.addLayoutAlias("resume", "layouts/resume_layout.liquid");
+
+    // webc plugin
+    eleventyConfig.addPlugin(pluginWebc, {
+        // Glob to find no-import global components
+		// (The default changed from `false` in Eleventy WebC v0.7.0)
+		components: "../_components/**/*.webc",
+    })
 
     return {
         templateFormats: [
