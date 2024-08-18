@@ -9,8 +9,10 @@ module.exports = function(eleventyConfig) {
     eleventyConfig.addPassthroughCopy({"static/js": "static/js"});
 
     eleventyConfig.addLayoutAlias("default", "layouts/default.liquid");
-    eleventyConfig.addLayoutAlias("resume", "layouts/resume_layout.liquid");
+    eleventyConfig.addLayoutAlias("blog", "layouts/blog.liquid");
 
+
+    /* template engine configurations */
     return {
         templateFormats: [
             "md",
