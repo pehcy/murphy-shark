@@ -221,6 +221,7 @@ time {
     box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
 
+/*
 .navbar-rail { 
     margin: 0 auto;
     position: relative;
@@ -229,25 +230,20 @@ time {
     display: flex;
     // padding: 6.067256px 0;
 }
+*/
+
+.navbar-rail {
+    align-items: center;
+    padding-left: 18px;
+    display: flex;
+    flex-direction: row;
+    flex-shrink: 0;
+    min-height: 3.25rem;
+    width: 100%;
+}
 
 .navbar-rail > h1 {
     margin: auto;
-}
-
-.navbar-end {
-    justify-content: flex-end;
-    margin-left: auto;
-    display: flex;
-}
-
-.navbar-end > a {
-    padding: 0.5rem;
-}
-
-.navbar-menu {
-    margin-right: -.75rem;
-    flex-grow: 1;
-    flex-shrink: 0;
 }
 
 .hamburger {
@@ -256,7 +252,17 @@ time {
     height: 3.25rem;
     width: 3.25rem;
     position: relative;
-    // margin-left: auto;
+    margin-left: auto;
+}
+
+.container {
+    align-items: stretch; 
+    display: flex; 
+    width: 100%; 
+    min-height: 3.25rem;
+    flex-grow: 1;
+    margin: 0 auto;
+    position: relative;
 }
 
 $burgerStripesLineHeight: 6px, 1px, -4px;
@@ -293,3 +299,52 @@ $burgerStripesLineHeight: 6px, 1px, -4px;
     -moz-transform: translateY(-5px) rotate(-45deg);
     -o-transform: translateY(-5px) rotate(-45deg);
 }
+
+.navbar-menu {
+    display: none;
+}
+
+.navbar-menu.active {
+    position: absolute;
+    width: 100%;
+}
+
+@include respond(lg) {
+    .hamburger {
+        display: none;
+    }
+
+    .navbar-rail {
+        width: fit-content;
+    }
+
+    .navbar-menu {
+        margin-right: -.75rem;
+        display: block;
+        flex-grow: 1;
+        flex-shrink: 0;
+    }
+
+    .navbar-end {
+        justify-content: flex-end;
+        margin-left: auto;
+        display: flex;
+        align-self: stretch;
+    }
+    
+    .navbar-end > a {
+        padding: 0.5rem;
+    }
+
+    .container {
+        max-width: 960px;
+    }
+}
+
+@include onlyFor(1023px) {
+    .navbar-menu {
+        max-height: calc(100vh - 3.25rem);
+        overflow: auto;
+    }
+}
+
