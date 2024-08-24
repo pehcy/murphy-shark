@@ -1,0 +1,602 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="/css/body.css">
+    <link rel="stylesheet" href="/css/post.css">
+    <link rel="stylesheet" href="/css/prism-one-dark.css">
+      <!-- icons -->
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/static/apple-touch-icon.png">
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/static/favicon-32x32.png">
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/static/favicon-16x16.png">
+    <link rel="manifest" href="/static/site.webmanifest">
+
+      <!-- opengraph -->
+    <meta property="og:title" content="murphy-shark blog site">
+    <meta property="og:type" content="website">
+    <meta property="og:site_map" content="Murphy Shark">
+    <meta property="og:description" content="Murphy the Shark">
+    <meta property="og:image" content="">
+    <meta property="og:url" content="https://murphyshark.github.io//blog/analyze-ticker-with-machine-learning-approach/">
+
+      <!-- SEO/Feeds -->
+    <link rel="canonical" href="">
+
+  </head>
+  <body class="grid gap no-margin border-gradient">
+    <nav
+      class="main-navbar"
+      role="navigation"
+      aria-label="main navigation ">
+      <div class="container">
+        <div class="navbar-rail">
+          <a
+            href="/"
+            class="primary-title"
+            style="text-decoration: none;">
+            <h1 class="no-margin secondary-gradient">
+              Murphy.
+            </h1>
+          </a>
+          <a
+            type="button"
+            role="button"
+            class="hamburger"
+            aria-label="menu"
+            data-target="siteNavbar"
+            onclick="menuBtnFunction(this)">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+          </a>
+        </div>
+        <div id="siteNavbar" class="navbar-menu">
+          <div class="navbar-end">
+            <a
+              href="/"
+              aria-current="page"
+              class="">Home</a>
+            <a href="/resume" class="">Resumé</a>
+            <a href="/archive" class="">Archive</a>
+            <a href="/notes" class="">Notes</a>
+            <a
+              href="https://github.com/pehcy"
+              class=""
+              target="_blank">GitHub</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+    <main id="main" class="grid gap">
+      <article>
+        <a href="#main" class="screen-reader-text">Skip to main content
+        </a>
+        <!-- h1 class="no-margin side-title">マーフィー🦈</h1 -->
+        
+        
+        <!-- scripts: >
+  <script src="/static/js/toc.js" defer></script> -->
+<article style="max-width: 960px;">
+  <h1>Humble Introduction</h1>
+<p>First off, thank you for taking time to read this article. I’m writing here not just to summarize my notes and findings, but also to enhance my technical writing skill and sharing what I’ve learned during these few weeks.</p>
+<p>A few weeks ago I established an informal research on algorithmic trading and time series data, I decide to start building a <a href="https://github.com/pehcy/binoculars">crypto trading bot</a> that would retrieve the candlesticks data for every minutes. First I had established the socket connection to Binance Streamer and retrieve real time data successfully, I then continue to build a mathematical algorithm to analyze the movement of k-lines.</p>
+<p>As I proceed further, I realized that I was unfamiliar with the concept of arbitrage, Ethereum and smart contract (at least for now), and it really took me a lot of time to do research. Fortunately, I was blessed with great mathematical thinking skills, so modelling mathematical formulae is just a cake walk for me.</p>
+<p>Or am I?</p>
+<h2>Hold on!</h2>
+<p>Before we start, here are the succinct requirements for building our model.</p>
+<ul>
+<li>Python 3+, or Anaconda installer is preferable.</li>
+<li>Code editors for Python (VScode, Vim, etc.)</li>
+<li>(Optional) IPython/Jupyter notebook for visualization.</li>
+<li>If you aren’t using Ubuntu 22.04, then you need to install python3-tk dependency for matplotlib GUI, installing with <code>sudo apt install python3-tk</code> .</li>
+</ul>
+<p>For me, I’m using Ubuntu 22.04 LTS in Windows 11 WSL 2. I prefer to work with Jupyter notebook inside the VSCode editor and I recommend it for you, too. So you can edit your notebooks and other code files at the same time.</p>
+<p>Once you finished setup, continue and install the following Python modules via <code>pip</code> or <code>conda</code>.</p>
+<ul>
+<li>matplotlib</li>
+<li>numpy</li>
+<li>pandas</li>
+<li>scikit-learn</li>
+</ul>
+<p>Scientific computing and machine learning are generally heavily rely upon certain packages such as numpy, scipy, matplolib, etc.</p>
+<h1>Candlestick… Candles? Tick?</h1>
+<p>A candlestick (or ticker) is a graphical way of representing the Open, High, Low, Close prices, together with the trades volume. The candlestick commonly abbreviated as OHLCV.</p>
+<p>You might saw a candlestick chart before, you may observed that the candles are filled with only two colors: red (bullish) and green (bearish). The bullish candlestick with solid background (or red color) denoted that the close price is higher than the open price, and vice versa for bearish candlestick.</p>
+<p>The open and close values correspond to the price of first trade and last trade, respectively.</p>
+<h1>Gets your hands dirty</h1>
+<p>It’s time to code now, note that this article is mere technicality and written primarily in Python.</p>
+<p>For this article, I cropped out an 1-day BTC-USDT trading data for back-testing. This exported CSV file contained the OHLCV entries for every tick from date 2022/7/15 to 2022/7/16, each tick is with 1-minute interval.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> numpy <span class="token keyword">as</span> np
+<span class="token keyword">import</span> pandas <span class="token keyword">as</span> pd
+<span class="token keyword">from</span> datetime <span class="token keyword">import</span> datetime
+
+df <span class="token operator">=</span> pd<span class="token punctuation">.</span>read_csv<span class="token punctuation">(</span><span class="token string">'../data/btcusdt.csv'</span><span class="token punctuation">,</span> index_col<span class="token operator">=</span><span class="token boolean">False</span><span class="token punctuation">)</span>
+df<span class="token punctuation">[</span><span class="token string">'Opentime'</span><span class="token punctuation">]</span> <span class="token operator">=</span> pd<span class="token punctuation">.</span>to_datetime<span class="token punctuation">(</span>df<span class="token punctuation">[</span><span class="token string">'Opentime'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token keyword">del</span> df<span class="token punctuation">[</span><span class="token string">'Ignore'</span><span class="token punctuation">]</span>    <span class="token comment"># remove unused ignored column</span>
+
+df<span class="token punctuation">.</span>info<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token comment"># &lt;class 'pandas.core.frame.DataFrame'></span>
+<span class="token comment"># Int64Index: 2000 entries, 0 to 1999</span>
+<span class="token comment"># Data columns (total 11 columns):</span>
+<span class="token comment"># Column Non-Null Count Dtype</span>
+<span class="token comment"># --- ------------------- --------------   ------------</span>
+<span class="token comment">#	0   Opentime            2000 non-null   datetime64[ns]</span>
+<span class="token comment">#	1   Open                2000 non-null   float64</span>
+<span class="token comment">#	2   High                2000 non-null   float64</span>
+<span class="token comment">#	3   Low                 2000 non-null   float64</span>
+<span class="token comment">#	4   Close               2000 non-null   float64</span>
+<span class="token comment">#	5   Volume              2000 non-null   float64</span>
+<span class="token comment">#	6   Closetime           2000 non-null   int64</span>
+<span class="token comment">#	7   Quote asset volume  2000 non-null   float64</span>
+<span class="token comment">#	8   Number of trades    2000 non-null   int64</span>
+<span class="token comment">#	9   Taker by base       2000 non-null   float64</span>
+<span class="token comment">#	10  Taker buy quote     2000 non-null   float64</span>
+<span class="token comment"># dtypes: datetime64ns, float64(8), int64(2)</span>
+<span class="token comment"># memory usage: 187.5 KB</span></code></pre>
+<p>If you want to try it yourself, feel free to download this <a href="https://github.com/pehcy/binoculars/blob/main/src/data/btcusdt.csv">CSV file</a>. Alternatively, you may grab <a href="https://github.com/pehcy/binoculars/blob/main/src/exports.py">this python script</a> and compile by yourself for the related CSV files (filename <code>btcusdt.csv</code>).</p>
+<h2>Compute Log returns</h2>
+<p>Ultimately, the log-returns are very useful in quantitative finance, especially when you want to do algorithmic trading. Because of its time-additive property, this made our life easier to compute the cumulative returns.</p>
+<p>For instance, consider you had collected the close prices over the last 3 minutes.</p>
+<table>
+<thead>
+<tr>
+<th>Time (minutes)</th>
+<th>Close price</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>20</td>
+</tr>
+<tr>
+<td>2</td>
+<td>10</td>
+</tr>
+<tr>
+<td>3</td>
+<td>25</td>
+</tr>
+</tbody>
+</table>
+<p>To compute the cumulative sum of log returns, simply summing up all the log prices. Over calculation, all values will get cancelled out, remain only the log returns at time 0 (start) and time n (the last one) as quotient inside log function.</p>
+<p>$\text{Cumulative Log return} = \displaystyle \log \frac{t_2}{t_1} + \log \frac{t_3}{t_2} = \log \frac{10}{20} + \log \frac{25}{10} = \log \biggl(\frac{10}{20} \times \frac{25}{10} \biggr) = 0.223144$</p>
+<p>In a generic form, the cumulative log-returns during time interval [0, n] can be formulate as</p>
+<p>$\displaystyle \sum^n_{t=1} \biggl(\log \frac{\pi_t}{\pi_{t-1}}\biggr) = \log \biggl(\prod^n_{t=1}\frac{\pi_t}{\pi_{t-1}} \biggr) = \log \biggl(\frac{\pi_1}{\pi_0} \times \frac{\pi_2}{\pi_1} \times \cdots \times \frac{\pi_n}{\pi_{n-1}} \biggr) = \log \frac{\pi_n}{\pi_0}$</p>
+<p>which is just the log value of the ratio of n-th close price to initial close price.</p>
+<p>Not only that, the log-value of return is very useful for generating lagged data . But no rush, I will discuss this part later.</p>
+<h2>When you should back-testing your data?</h2>
+<blockquote>
+<p><strong>“Wait a minute, Doc. Are you telling me you built a time machine...out of a DeLorean?”</strong></p>
+</blockquote>
+<p>There are two common approaches for back-testing: Vectorized back-testing and Event-driven back-testing.</p>
+<p>Back-testing is about simulate a trading strategy by looking back the historical data. This back-testing strategy aggregate all the related data and transformed them into vectors or arrays and perform linear algebra computation, which are drastically fast. Vectorized back-testing has its limitation, however. It doesn’t means that you can become a billionaire by traveling back in time. The pattern of candlesticks is ephemeral, You can’t just keep changing the parameters just to make it looks nicer during back-testing, this will lead to over-fitting — your model performed well only on historical data but performed poorly on future data.</p>
+<p>Another scenario is event-driven back-testing, it provide a higher degree of precision, but the computation cost is much more expensive comparing to the vectorized back-testing approach. The following approach required explicit loops over every bars of the candlesticks data which sacrificed computational speed for higher prediction accuracy.</p>
+<h2>Predictions on price movement direction</h2>
+<p>Here’s where it gets serious now.</p>
+<p>First we compute the log returns of the underlying asset</p>
+<pre class="language-python"><code class="language-python">df<span class="token punctuation">[</span><span class="token string">'log_returns'</span><span class="token punctuation">]</span> <span class="token operator">=</span> np<span class="token punctuation">.</span>log<span class="token punctuation">(</span>df<span class="token punctuation">[</span><span class="token string">'Close'</span><span class="token punctuation">]</span> <span class="token operator">/</span> df<span class="token punctuation">[</span><span class="token string">'Close'</span><span class="token punctuation">]</span><span class="token punctuation">.</span>shift<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+df<span class="token punctuation">.</span>head<span class="token punctuation">(</span><span class="token punctuation">)</span></code></pre>
+<p>I’ve shifting the original time-series data to reproduce another five lagged versions time-series. The basic idea is that the market prices from last 1-minute and four more minutes back can be used to predict the market price now.</p>
+<pre class="language-python"><code class="language-python">minutes2shift <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">]</span>
+
+<span class="token keyword">def</span> <span class="token function">generate_lags</span><span class="token punctuation">(</span>data<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">global</span> cols
+    cols <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+    <span class="token keyword">for</span> lag <span class="token keyword">in</span> minutes2shift<span class="token punctuation">:</span>
+        <span class="token keyword">if</span> <span class="token string">'log_returns'</span> <span class="token keyword">in</span> data<span class="token punctuation">:</span>
+            col <span class="token operator">=</span> <span class="token string">'lag_{}'</span><span class="token punctuation">.</span><span class="token builtin">format</span><span class="token punctuation">(</span>lag<span class="token punctuation">)</span>
+            data<span class="token punctuation">[</span>col<span class="token punctuation">]</span> <span class="token operator">=</span> data<span class="token punctuation">[</span><span class="token string">'log_returns'</span><span class="token punctuation">]</span><span class="token punctuation">.</span>shift<span class="token punctuation">(</span>lag<span class="token punctuation">)</span>
+            cols<span class="token punctuation">.</span>append<span class="token punctuation">(</span>col<span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>cols<span class="token punctuation">)</span>
+
+generate_lags<span class="token punctuation">(</span>df<span class="token punctuation">)</span>
+df<span class="token punctuation">.</span>dropna<span class="token punctuation">(</span>inplace<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span></code></pre>
+<p>Now transform the lagged values to binary: either 0 or 1.</p>
+<pre class="language-python"><code class="language-python">df<span class="token punctuation">[</span>cols<span class="token punctuation">]</span> <span class="token operator">=</span> np<span class="token punctuation">.</span>where<span class="token punctuation">(</span>df<span class="token punctuation">[</span>cols<span class="token punctuation">]</span> <span class="token operator">></span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span></code></pre>
+<p>and transform the float valued predictions to its sign values: either +1 or -1.</p>
+<pre class="language-python"><code class="language-python">df<span class="token punctuation">[</span><span class="token string">'direction'</span><span class="token punctuation">]</span> <span class="token operator">=</span> np<span class="token punctuation">.</span>where<span class="token punctuation">(</span>df<span class="token punctuation">[</span><span class="token string">'log_returns'</span><span class="token punctuation">]</span> <span class="token operator">></span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span></code></pre>
+<p>Now you can see that the original data table now included the lagged returns and movement directions of log returns. (Note that row 1-5 has been removed since we had dropped all the entries which had contained <code>NaN</code> data type)</p>
+<pre class="language-python"><code class="language-python">df<span class="token punctuation">[</span>cols <span class="token operator">+</span> <span class="token punctuation">[</span><span class="token string">'direction'</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">.</span>head<span class="token punctuation">(</span><span class="token punctuation">)</span></code></pre>
+<p>To make prediction on the price movement. You can apply several supervised learning algorithms on our time series. Recall that a supervised learning algorithms are intentionally to perform classification, it required features and label data.</p>
+<p>From the tabulated lagged data as shown above, observed that there are only two possible outcomes for <code>direction</code> column: +1 if the price going upward, -1 if the price going downward. Based on the outcomes, I’ve using <strong>support vector machine</strong> (SVM) to train on 80% of the data frame rows, and testing on the remaining set. The code below trains and tests based on a sequential train-test split.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> sklearn<span class="token punctuation">.</span>svm <span class="token keyword">import</span> SVC
+<span class="token keyword">from</span> sklearn<span class="token punctuation">.</span>metrics <span class="token keyword">import</span> accuracy_score
+
+split <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>df<span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">0.80</span><span class="token punctuation">)</span>
+train <span class="token operator">=</span> df<span class="token punctuation">.</span>iloc<span class="token punctuation">[</span><span class="token punctuation">:</span>split<span class="token punctuation">]</span><span class="token punctuation">.</span>copy<span class="token punctuation">(</span><span class="token punctuation">)</span>
+model <span class="token operator">=</span> SVC<span class="token punctuation">(</span>C<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">,</span> kernel<span class="token operator">=</span><span class="token string">'poly'</span><span class="token punctuation">,</span> degree<span class="token operator">=</span><span class="token number">3</span><span class="token punctuation">)</span>
+model<span class="token punctuation">.</span>fit<span class="token punctuation">(</span>train<span class="token punctuation">[</span>cols<span class="token punctuation">]</span><span class="token punctuation">,</span> train<span class="token punctuation">[</span><span class="token string">'direction'</span><span class="token punctuation">]</span><span class="token punctuation">)</span></code></pre>
+<p>At this point, we can now check the accuracy for both  training and test data.</p>
+<pre class="language-python"><code class="language-python">test_accuracy <span class="token operator">=</span> accuracy_score<span class="token punctuation">(</span>train<span class="token punctuation">[</span><span class="token string">'direction'</span><span class="token punctuation">]</span><span class="token punctuation">,</span> model<span class="token punctuation">.</span>predict<span class="token punctuation">(</span>train<span class="token punctuation">[</span>cols<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+train_accuracy <span class="token operator">=</span> accuracy_score<span class="token punctuation">(</span>test<span class="token punctuation">[</span><span class="token string">'direction'</span><span class="token punctuation">]</span><span class="token punctuation">,</span> model<span class="token punctuation">.</span>predict<span class="token punctuation">(</span>test<span class="token punctuation">[</span>cols<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre>
+<p>Of course, you can even try using logistic regression for classifying the direction. Because the market directional movement is moving whether upward or downward, as well as labelled with the values +1 and -1. The logistic regression is a binary classifier that performed well on classifying this kind of features data.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> sklearn<span class="token punctuation">.</span>linear_model <span class="token keyword">import</span> LogisticRegression
+
+log_reg_model <span class="token operator">=</span> LogisticRegression<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>fit<span class="token punctuation">(</span>train<span class="token punctuation">[</span>cols<span class="token punctuation">]</span><span class="token punctuation">,</span> train<span class="token punctuation">[</span><span class="token string">'direction'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>accuracy_score<span class="token punctuation">(</span>train<span class="token punctuation">[</span><span class="token string">'direction'</span><span class="token punctuation">]</span><span class="token punctuation">,</span> log_reg_model<span class="token punctuation">.</span>predict<span class="token punctuation">(</span>train<span class="token punctuation">[</span>cols<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre>
+<p>This is the accuracy of the predictions from the fitted models:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>SVM with polynomial degree 3</th>
+<th>Logistic Regression</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Train (80% of sample)</td>
+<td>0.56050157</td>
+<td>0.53667711</td>
+</tr>
+<tr>
+<td>Test (20% of sample)</td>
+<td>0.52631579</td>
+<td>0.49624060</td>
+</tr>
+</tbody>
+</table>
+<p>Puff! Despite of logistic regression, I’ll rather choose SVM model. It has a slight edge — in the context of hit ratio. The model which accuracy scores for both test and train data greater than 50% are considered to be good, and our model is better as its accuracy gets closer to one.</p>
+<p>Now that we can derive  the log returns for the ML-based algorithmic trading strategy, and hence plot our strategy performance.</p>
+<pre class="language-python"><code class="language-python"><span class="token comment"># derive ML-based strategy</span>
+test<span class="token punctuation">[</span><span class="token string">'strategy'</span><span class="token punctuation">]</span> <span class="token operator">=</span> test<span class="token punctuation">[</span><span class="token string">'position'</span><span class="token punctuation">]</span> <span class="token operator">*</span> test<span class="token punctuation">[</span><span class="token string">'log_returns'</span><span class="token punctuation">]</span>
+
+<span class="token comment"># Plotting performance of strategy</span>
+test<span class="token punctuation">[</span><span class="token punctuation">[</span><span class="token string">'log_returns'</span><span class="token punctuation">,</span> <span class="token string">'strategy'</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">.</span>cumsum<span class="token punctuation">(</span><span class="token punctuation">)</span> \
+    <span class="token punctuation">.</span><span class="token builtin">apply</span><span class="token punctuation">(</span>np<span class="token punctuation">.</span>exp<span class="token punctuation">)</span> \
+    <span class="token punctuation">.</span>set_index<span class="token punctuation">(</span>test<span class="token punctuation">[</span><span class="token string">'Opentime'</span><span class="token punctuation">]</span><span class="token punctuation">)</span> \
+    <span class="token punctuation">.</span>plot<span class="token punctuation">(</span>figsize<span class="token operator">=</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">6</span><span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre>
+<p><img src="Analyze%20Ticker%20with%20Machine%20Learning%20approach%2085667f263b9149dbb6b63ddff0b8cfc5/strategy.png" alt="strategy.png"></p>
+<h2>Interpret result with Kelly Criterion</h2>
+<p>The investing strategy is much likely  same as a coin-tossing game, you would gain if your model made a correct guess on the price movement, otherwise you will lose your bets.</p>
+<p>Well, as a wise investor, of course we wouldn’t put all your eggs in one basket. So here comes the question: How much fund should we allocate so that the profit can be maximized, and minimize the loss at the same time?</p>
+<p>The solution is pretty straight forward. Let me introduce the Kelly criterion— An optimized way to put your bets on a game.</p>
+<p>The Kelly criterion is defined as below:</p>
+<p>$\text{KC}% = \displaystyle \frac{p - (1 - p)}{R}$</p>
+<p>where p is the probability of success, and R is the ratio of the average gain against the ratio of the average loss. Any value of p that’s greater than 0.5 is consider good.</p>
+<p>According to Investopedia, however, it recommended that</p>
+<blockquote>
+<p><strong>“The percentage (a number less than one) that the equation produces
+represents the size of the positions you should be taking. For example,
+if the Kelly percentage is 0.05, then you should take a 5% position in
+each of the equities in your portfolio. This system, in essence, lets
+you know how much you should diversify.”</strong></p>
+</blockquote>
+<p>For our case, we view our model accuracy score as the probability of success, said p = 0.52. And the odds of win against loss is 1-1, so we have R = 1. Substitute into the formula and calculate will give us the Kelly percentage</p>
+<p>$\text{KC}% = \displaystyle \frac{0.52 - (1 - 0.52)}{1} = 0.04$</p>
+<p>indicating that 4% of your fund can be allocated in BTC-USDT cryptocurrency  without worries.</p>
+<p>Also, it is recommended to update your optimal fraction after a certain period of time (1 week, 1month, etc.).</p>
+<h2>Final thoughts</h2>
+<p>Before I end this post, let’s overview again the full process of vectorized back-testing.</p>
+<ol>
+<li>From the imported time-series data, find the log returns for each timestamp. Note that the log return of 1st row will always be <code>NaN</code>.</li>
+<li>Generates the lagged log returns based on original log returns data. Hence,
+<ol>
+<li>Transform the values from lag 1 to lag 5 to binary data (features).</li>
+<li>Get the sign of log return for each entries (label data).</li>
+</ol>
+</li>
+<li>Divide your time series data into 80% of training set and 20% of test data. (It depends, you can pick any ratio for training and test).</li>
+<li>Lastly, applying any supervised learning algorithm (OLS Regression, SVM, etc.) to fit your model, with the transformed features and labels as input.</li>
+</ol>
+<p>Overall I think this is a good start to build my algorithmic model. However I feel like there are still many things that have not been written.</p>
+<h2>What’s next?</h2>
+<p>Thanks for reading, I hope you enjoy reading this post. Feel free to comment below if you have any questions regarding this post. We’re going to learn how to use Deep Neural Network (DNN) model to make prediction on future prices in next topic.</p>
+<p>See you then!</p>
+<h2>References</h2>
+<ol>
+<li>J.Kuepper. (2021). <em>Using the Kelly Criterion for Asset Allocation and Money Management</em>. <a href="https://www.investopedia.com/articles/trading/04/091504.asp">Investopedia</a></li>
+<li>Y. Hilpisch. (2019). <em>Python for Finance: Mastering Data-driven Finance (2nd ed.)</em>. O’ Reilly</li>
+</ol>
+
+</article>
+
+<!--
+  <div class="blog-container">  <main class="blog-main">    <div class="blog-c2">      <article class="blog-article" id="blog-contents">        <h1>Humble Introduction</h1>
+<p>First off, thank you for taking time to read this article. I’m writing here not just to summarize my notes and findings, but also to enhance my technical writing skill and sharing what I’ve learned during these few weeks.</p>
+<p>A few weeks ago I established an informal research on algorithmic trading and time series data, I decide to start building a <a href="https://github.com/pehcy/binoculars">crypto trading bot</a> that would retrieve the candlesticks data for every minutes. First I had established the socket connection to Binance Streamer and retrieve real time data successfully, I then continue to build a mathematical algorithm to analyze the movement of k-lines.</p>
+<p>As I proceed further, I realized that I was unfamiliar with the concept of arbitrage, Ethereum and smart contract (at least for now), and it really took me a lot of time to do research. Fortunately, I was blessed with great mathematical thinking skills, so modelling mathematical formulae is just a cake walk for me.</p>
+<p>Or am I?</p>
+<h2>Hold on!</h2>
+<p>Before we start, here are the succinct requirements for building our model.</p>
+<ul>
+<li>Python 3+, or Anaconda installer is preferable.</li>
+<li>Code editors for Python (VScode, Vim, etc.)</li>
+<li>(Optional) IPython/Jupyter notebook for visualization.</li>
+<li>If you aren’t using Ubuntu 22.04, then you need to install python3-tk dependency for matplotlib GUI, installing with <code>sudo apt install python3-tk</code> .</li>
+</ul>
+<p>For me, I’m using Ubuntu 22.04 LTS in Windows 11 WSL 2. I prefer to work with Jupyter notebook inside the VSCode editor and I recommend it for you, too. So you can edit your notebooks and other code files at the same time.</p>
+<p>Once you finished setup, continue and install the following Python modules via <code>pip</code> or <code>conda</code>.</p>
+<ul>
+<li>matplotlib</li>
+<li>numpy</li>
+<li>pandas</li>
+<li>scikit-learn</li>
+</ul>
+<p>Scientific computing and machine learning are generally heavily rely upon certain packages such as numpy, scipy, matplolib, etc.</p>
+<h1>Candlestick… Candles? Tick?</h1>
+<p>A candlestick (or ticker) is a graphical way of representing the Open, High, Low, Close prices, together with the trades volume. The candlestick commonly abbreviated as OHLCV.</p>
+<p>You might saw a candlestick chart before, you may observed that the candles are filled with only two colors: red (bullish) and green (bearish). The bullish candlestick with solid background (or red color) denoted that the close price is higher than the open price, and vice versa for bearish candlestick.</p>
+<p>The open and close values correspond to the price of first trade and last trade, respectively.</p>
+<h1>Gets your hands dirty</h1>
+<p>It’s time to code now, note that this article is mere technicality and written primarily in Python.</p>
+<p>For this article, I cropped out an 1-day BTC-USDT trading data for back-testing. This exported CSV file contained the OHLCV entries for every tick from date 2022/7/15 to 2022/7/16, each tick is with 1-minute interval.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> numpy <span class="token keyword">as</span> np
+<span class="token keyword">import</span> pandas <span class="token keyword">as</span> pd
+<span class="token keyword">from</span> datetime <span class="token keyword">import</span> datetime
+
+df <span class="token operator">=</span> pd<span class="token punctuation">.</span>read_csv<span class="token punctuation">(</span><span class="token string">'../data/btcusdt.csv'</span><span class="token punctuation">,</span> index_col<span class="token operator">=</span><span class="token boolean">False</span><span class="token punctuation">)</span>
+df<span class="token punctuation">[</span><span class="token string">'Opentime'</span><span class="token punctuation">]</span> <span class="token operator">=</span> pd<span class="token punctuation">.</span>to_datetime<span class="token punctuation">(</span>df<span class="token punctuation">[</span><span class="token string">'Opentime'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token keyword">del</span> df<span class="token punctuation">[</span><span class="token string">'Ignore'</span><span class="token punctuation">]</span>    <span class="token comment"># remove unused ignored column</span>
+
+df<span class="token punctuation">.</span>info<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token comment"># &lt;class 'pandas.core.frame.DataFrame'></span>
+<span class="token comment"># Int64Index: 2000 entries, 0 to 1999</span>
+<span class="token comment"># Data columns (total 11 columns):</span>
+<span class="token comment"># Column Non-Null Count Dtype</span>
+<span class="token comment"># --- ------------------- --------------   ------------</span>
+<span class="token comment">#	0   Opentime            2000 non-null   datetime64[ns]</span>
+<span class="token comment">#	1   Open                2000 non-null   float64</span>
+<span class="token comment">#	2   High                2000 non-null   float64</span>
+<span class="token comment">#	3   Low                 2000 non-null   float64</span>
+<span class="token comment">#	4   Close               2000 non-null   float64</span>
+<span class="token comment">#	5   Volume              2000 non-null   float64</span>
+<span class="token comment">#	6   Closetime           2000 non-null   int64</span>
+<span class="token comment">#	7   Quote asset volume  2000 non-null   float64</span>
+<span class="token comment">#	8   Number of trades    2000 non-null   int64</span>
+<span class="token comment">#	9   Taker by base       2000 non-null   float64</span>
+<span class="token comment">#	10  Taker buy quote     2000 non-null   float64</span>
+<span class="token comment"># dtypes: datetime64ns, float64(8), int64(2)</span>
+<span class="token comment"># memory usage: 187.5 KB</span></code></pre>
+<p>If you want to try it yourself, feel free to download this <a href="https://github.com/pehcy/binoculars/blob/main/src/data/btcusdt.csv">CSV file</a>. Alternatively, you may grab <a href="https://github.com/pehcy/binoculars/blob/main/src/exports.py">this python script</a> and compile by yourself for the related CSV files (filename <code>btcusdt.csv</code>).</p>
+<h2>Compute Log returns</h2>
+<p>Ultimately, the log-returns are very useful in quantitative finance, especially when you want to do algorithmic trading. Because of its time-additive property, this made our life easier to compute the cumulative returns.</p>
+<p>For instance, consider you had collected the close prices over the last 3 minutes.</p>
+<table>
+<thead>
+<tr>
+<th>Time (minutes)</th>
+<th>Close price</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>20</td>
+</tr>
+<tr>
+<td>2</td>
+<td>10</td>
+</tr>
+<tr>
+<td>3</td>
+<td>25</td>
+</tr>
+</tbody>
+</table>
+<p>To compute the cumulative sum of log returns, simply summing up all the log prices. Over calculation, all values will get cancelled out, remain only the log returns at time 0 (start) and time n (the last one) as quotient inside log function.</p>
+<p>$\text{Cumulative Log return} = \displaystyle \log \frac{t_2}{t_1} + \log \frac{t_3}{t_2} = \log \frac{10}{20} + \log \frac{25}{10} = \log \biggl(\frac{10}{20} \times \frac{25}{10} \biggr) = 0.223144$</p>
+<p>In a generic form, the cumulative log-returns during time interval [0, n] can be formulate as</p>
+<p>$\displaystyle \sum^n_{t=1} \biggl(\log \frac{\pi_t}{\pi_{t-1}}\biggr) = \log \biggl(\prod^n_{t=1}\frac{\pi_t}{\pi_{t-1}} \biggr) = \log \biggl(\frac{\pi_1}{\pi_0} \times \frac{\pi_2}{\pi_1} \times \cdots \times \frac{\pi_n}{\pi_{n-1}} \biggr) = \log \frac{\pi_n}{\pi_0}$</p>
+<p>which is just the log value of the ratio of n-th close price to initial close price.</p>
+<p>Not only that, the log-value of return is very useful for generating lagged data . But no rush, I will discuss this part later.</p>
+<h2>When you should back-testing your data?</h2>
+<blockquote>
+<p><strong>“Wait a minute, Doc. Are you telling me you built a time machine...out of a DeLorean?”</strong></p>
+</blockquote>
+<p>There are two common approaches for back-testing: Vectorized back-testing and Event-driven back-testing.</p>
+<p>Back-testing is about simulate a trading strategy by looking back the historical data. This back-testing strategy aggregate all the related data and transformed them into vectors or arrays and perform linear algebra computation, which are drastically fast. Vectorized back-testing has its limitation, however. It doesn’t means that you can become a billionaire by traveling back in time. The pattern of candlesticks is ephemeral, You can’t just keep changing the parameters just to make it looks nicer during back-testing, this will lead to over-fitting — your model performed well only on historical data but performed poorly on future data.</p>
+<p>Another scenario is event-driven back-testing, it provide a higher degree of precision, but the computation cost is much more expensive comparing to the vectorized back-testing approach. The following approach required explicit loops over every bars of the candlesticks data which sacrificed computational speed for higher prediction accuracy.</p>
+<h2>Predictions on price movement direction</h2>
+<p>Here’s where it gets serious now.</p>
+<p>First we compute the log returns of the underlying asset</p>
+<pre class="language-python"><code class="language-python">df<span class="token punctuation">[</span><span class="token string">'log_returns'</span><span class="token punctuation">]</span> <span class="token operator">=</span> np<span class="token punctuation">.</span>log<span class="token punctuation">(</span>df<span class="token punctuation">[</span><span class="token string">'Close'</span><span class="token punctuation">]</span> <span class="token operator">/</span> df<span class="token punctuation">[</span><span class="token string">'Close'</span><span class="token punctuation">]</span><span class="token punctuation">.</span>shift<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+df<span class="token punctuation">.</span>head<span class="token punctuation">(</span><span class="token punctuation">)</span></code></pre>
+<p>I’ve shifting the original time-series data to reproduce another five lagged versions time-series. The basic idea is that the market prices from last 1-minute and four more minutes back can be used to predict the market price now.</p>
+<pre class="language-python"><code class="language-python">minutes2shift <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">]</span>
+
+<span class="token keyword">def</span> <span class="token function">generate_lags</span><span class="token punctuation">(</span>data<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">global</span> cols
+    cols <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+    <span class="token keyword">for</span> lag <span class="token keyword">in</span> minutes2shift<span class="token punctuation">:</span>
+        <span class="token keyword">if</span> <span class="token string">'log_returns'</span> <span class="token keyword">in</span> data<span class="token punctuation">:</span>
+            col <span class="token operator">=</span> <span class="token string">'lag_{}'</span><span class="token punctuation">.</span><span class="token builtin">format</span><span class="token punctuation">(</span>lag<span class="token punctuation">)</span>
+            data<span class="token punctuation">[</span>col<span class="token punctuation">]</span> <span class="token operator">=</span> data<span class="token punctuation">[</span><span class="token string">'log_returns'</span><span class="token punctuation">]</span><span class="token punctuation">.</span>shift<span class="token punctuation">(</span>lag<span class="token punctuation">)</span>
+            cols<span class="token punctuation">.</span>append<span class="token punctuation">(</span>col<span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>cols<span class="token punctuation">)</span>
+
+generate_lags<span class="token punctuation">(</span>df<span class="token punctuation">)</span>
+df<span class="token punctuation">.</span>dropna<span class="token punctuation">(</span>inplace<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span></code></pre>
+<p>Now transform the lagged values to binary: either 0 or 1.</p>
+<pre class="language-python"><code class="language-python">df<span class="token punctuation">[</span>cols<span class="token punctuation">]</span> <span class="token operator">=</span> np<span class="token punctuation">.</span>where<span class="token punctuation">(</span>df<span class="token punctuation">[</span>cols<span class="token punctuation">]</span> <span class="token operator">></span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span></code></pre>
+<p>and transform the float valued predictions to its sign values: either +1 or -1.</p>
+<pre class="language-python"><code class="language-python">df<span class="token punctuation">[</span><span class="token string">'direction'</span><span class="token punctuation">]</span> <span class="token operator">=</span> np<span class="token punctuation">.</span>where<span class="token punctuation">(</span>df<span class="token punctuation">[</span><span class="token string">'log_returns'</span><span class="token punctuation">]</span> <span class="token operator">></span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span></code></pre>
+<p>Now you can see that the original data table now included the lagged returns and movement directions of log returns. (Note that row 1-5 has been removed since we had dropped all the entries which had contained <code>NaN</code> data type)</p>
+<pre class="language-python"><code class="language-python">df<span class="token punctuation">[</span>cols <span class="token operator">+</span> <span class="token punctuation">[</span><span class="token string">'direction'</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">.</span>head<span class="token punctuation">(</span><span class="token punctuation">)</span></code></pre>
+<p>To make prediction on the price movement. You can apply several supervised learning algorithms on our time series. Recall that a supervised learning algorithms are intentionally to perform classification, it required features and label data.</p>
+<p>From the tabulated lagged data as shown above, observed that there are only two possible outcomes for <code>direction</code> column: +1 if the price going upward, -1 if the price going downward. Based on the outcomes, I’ve using <strong>support vector machine</strong> (SVM) to train on 80% of the data frame rows, and testing on the remaining set. The code below trains and tests based on a sequential train-test split.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> sklearn<span class="token punctuation">.</span>svm <span class="token keyword">import</span> SVC
+<span class="token keyword">from</span> sklearn<span class="token punctuation">.</span>metrics <span class="token keyword">import</span> accuracy_score
+
+split <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>df<span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">0.80</span><span class="token punctuation">)</span>
+train <span class="token operator">=</span> df<span class="token punctuation">.</span>iloc<span class="token punctuation">[</span><span class="token punctuation">:</span>split<span class="token punctuation">]</span><span class="token punctuation">.</span>copy<span class="token punctuation">(</span><span class="token punctuation">)</span>
+model <span class="token operator">=</span> SVC<span class="token punctuation">(</span>C<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">,</span> kernel<span class="token operator">=</span><span class="token string">'poly'</span><span class="token punctuation">,</span> degree<span class="token operator">=</span><span class="token number">3</span><span class="token punctuation">)</span>
+model<span class="token punctuation">.</span>fit<span class="token punctuation">(</span>train<span class="token punctuation">[</span>cols<span class="token punctuation">]</span><span class="token punctuation">,</span> train<span class="token punctuation">[</span><span class="token string">'direction'</span><span class="token punctuation">]</span><span class="token punctuation">)</span></code></pre>
+<p>At this point, we can now check the accuracy for both  training and test data.</p>
+<pre class="language-python"><code class="language-python">test_accuracy <span class="token operator">=</span> accuracy_score<span class="token punctuation">(</span>train<span class="token punctuation">[</span><span class="token string">'direction'</span><span class="token punctuation">]</span><span class="token punctuation">,</span> model<span class="token punctuation">.</span>predict<span class="token punctuation">(</span>train<span class="token punctuation">[</span>cols<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+train_accuracy <span class="token operator">=</span> accuracy_score<span class="token punctuation">(</span>test<span class="token punctuation">[</span><span class="token string">'direction'</span><span class="token punctuation">]</span><span class="token punctuation">,</span> model<span class="token punctuation">.</span>predict<span class="token punctuation">(</span>test<span class="token punctuation">[</span>cols<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre>
+<p>Of course, you can even try using logistic regression for classifying the direction. Because the market directional movement is moving whether upward or downward, as well as labelled with the values +1 and -1. The logistic regression is a binary classifier that performed well on classifying this kind of features data.</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> sklearn<span class="token punctuation">.</span>linear_model <span class="token keyword">import</span> LogisticRegression
+
+log_reg_model <span class="token operator">=</span> LogisticRegression<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>fit<span class="token punctuation">(</span>train<span class="token punctuation">[</span>cols<span class="token punctuation">]</span><span class="token punctuation">,</span> train<span class="token punctuation">[</span><span class="token string">'direction'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>accuracy_score<span class="token punctuation">(</span>train<span class="token punctuation">[</span><span class="token string">'direction'</span><span class="token punctuation">]</span><span class="token punctuation">,</span> log_reg_model<span class="token punctuation">.</span>predict<span class="token punctuation">(</span>train<span class="token punctuation">[</span>cols<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre>
+<p>This is the accuracy of the predictions from the fitted models:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>SVM with polynomial degree 3</th>
+<th>Logistic Regression</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Train (80% of sample)</td>
+<td>0.56050157</td>
+<td>0.53667711</td>
+</tr>
+<tr>
+<td>Test (20% of sample)</td>
+<td>0.52631579</td>
+<td>0.49624060</td>
+</tr>
+</tbody>
+</table>
+<p>Puff! Despite of logistic regression, I’ll rather choose SVM model. It has a slight edge — in the context of hit ratio. The model which accuracy scores for both test and train data greater than 50% are considered to be good, and our model is better as its accuracy gets closer to one.</p>
+<p>Now that we can derive  the log returns for the ML-based algorithmic trading strategy, and hence plot our strategy performance.</p>
+<pre class="language-python"><code class="language-python"><span class="token comment"># derive ML-based strategy</span>
+test<span class="token punctuation">[</span><span class="token string">'strategy'</span><span class="token punctuation">]</span> <span class="token operator">=</span> test<span class="token punctuation">[</span><span class="token string">'position'</span><span class="token punctuation">]</span> <span class="token operator">*</span> test<span class="token punctuation">[</span><span class="token string">'log_returns'</span><span class="token punctuation">]</span>
+
+<span class="token comment"># Plotting performance of strategy</span>
+test<span class="token punctuation">[</span><span class="token punctuation">[</span><span class="token string">'log_returns'</span><span class="token punctuation">,</span> <span class="token string">'strategy'</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">.</span>cumsum<span class="token punctuation">(</span><span class="token punctuation">)</span> \
+    <span class="token punctuation">.</span><span class="token builtin">apply</span><span class="token punctuation">(</span>np<span class="token punctuation">.</span>exp<span class="token punctuation">)</span> \
+    <span class="token punctuation">.</span>set_index<span class="token punctuation">(</span>test<span class="token punctuation">[</span><span class="token string">'Opentime'</span><span class="token punctuation">]</span><span class="token punctuation">)</span> \
+    <span class="token punctuation">.</span>plot<span class="token punctuation">(</span>figsize<span class="token operator">=</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">6</span><span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre>
+<p><img src="Analyze%20Ticker%20with%20Machine%20Learning%20approach%2085667f263b9149dbb6b63ddff0b8cfc5/strategy.png" alt="strategy.png"></p>
+<h2>Interpret result with Kelly Criterion</h2>
+<p>The investing strategy is much likely  same as a coin-tossing game, you would gain if your model made a correct guess on the price movement, otherwise you will lose your bets.</p>
+<p>Well, as a wise investor, of course we wouldn’t put all your eggs in one basket. So here comes the question: How much fund should we allocate so that the profit can be maximized, and minimize the loss at the same time?</p>
+<p>The solution is pretty straight forward. Let me introduce the Kelly criterion— An optimized way to put your bets on a game.</p>
+<p>The Kelly criterion is defined as below:</p>
+<p>$\text{KC}% = \displaystyle \frac{p - (1 - p)}{R}$</p>
+<p>where p is the probability of success, and R is the ratio of the average gain against the ratio of the average loss. Any value of p that’s greater than 0.5 is consider good.</p>
+<p>According to Investopedia, however, it recommended that</p>
+<blockquote>
+<p><strong>“The percentage (a number less than one) that the equation produces
+represents the size of the positions you should be taking. For example,
+if the Kelly percentage is 0.05, then you should take a 5% position in
+each of the equities in your portfolio. This system, in essence, lets
+you know how much you should diversify.”</strong></p>
+</blockquote>
+<p>For our case, we view our model accuracy score as the probability of success, said p = 0.52. And the odds of win against loss is 1-1, so we have R = 1. Substitute into the formula and calculate will give us the Kelly percentage</p>
+<p>$\text{KC}% = \displaystyle \frac{0.52 - (1 - 0.52)}{1} = 0.04$</p>
+<p>indicating that 4% of your fund can be allocated in BTC-USDT cryptocurrency  without worries.</p>
+<p>Also, it is recommended to update your optimal fraction after a certain period of time (1 week, 1month, etc.).</p>
+<h2>Final thoughts</h2>
+<p>Before I end this post, let’s overview again the full process of vectorized back-testing.</p>
+<ol>
+<li>From the imported time-series data, find the log returns for each timestamp. Note that the log return of 1st row will always be <code>NaN</code>.</li>
+<li>Generates the lagged log returns based on original log returns data. Hence,
+<ol>
+<li>Transform the values from lag 1 to lag 5 to binary data (features).</li>
+<li>Get the sign of log return for each entries (label data).</li>
+</ol>
+</li>
+<li>Divide your time series data into 80% of training set and 20% of test data. (It depends, you can pick any ratio for training and test).</li>
+<li>Lastly, applying any supervised learning algorithm (OLS Regression, SVM, etc.) to fit your model, with the transformed features and labels as input.</li>
+</ol>
+<p>Overall I think this is a good start to build my algorithmic model. However I feel like there are still many things that have not been written.</p>
+<h2>What’s next?</h2>
+<p>Thanks for reading, I hope you enjoy reading this post. Feel free to comment below if you have any questions regarding this post. We’re going to learn how to use Deep Neural Network (DNN) model to make prediction on future prices in next topic.</p>
+<p>See you then!</p>
+<h2>References</h2>
+<ol>
+<li>J.Kuepper. (2021). <em>Using the Kelly Criterion for Asset Allocation and Money Management</em>. <a href="https://www.investopedia.com/articles/trading/04/091504.asp">Investopedia</a></li>
+<li>Y. Hilpisch. (2019). <em>Python for Finance: Mastering Data-driven Finance (2nd ed.)</em>. O’ Reilly</li>
+</ol>
+      </article>    </div>  </main>  <aside class="sidebar">    <div class="sidebar-rail" id="toc"></div>
+  </aside>
+</div>
+-->
+      </article>
+    </main>
+    <footer id="site_footer">
+      <div class="foot-wrapper">
+        <p style="font-weight: 600; color: #dbdbdb; font-size: 0.875rem; /* 14px */
+line-height: 1.25rem; /* 20px */">
+          © 2024 pehcy a.k.a Murphy the shark</p>
+        <p style="font-size: 0.875rem;">Made with 🍦vanilla JavaScript + 🎈🐁<a
+            href="https://www.11ty.dev/"
+            style="display: inline-block;"
+            target="_blank">Eleventy</a>
+        </p>
+        <p style="font-size: 0.875rem;">Source code available in this
+          <a
+            href="https://github.com/pehcy/MurphyShark-site"
+            style="display: inline-block;"
+            target="_blank">repository</a>.
+        </p>
+        <p class="social-links">
+          <a
+            href="https://github.com/pehcy"
+            target="_blank"
+            rel="noopener noreferrer">
+            <svg
+              width="32"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 496 512"
+              aria-labelledby="GithubTitle"
+              role="img">
+              <title id="GithubTitle">Github</title>
+              <path fill="currentColor" d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"></path>
+            </svg>
+          </a>
+          <a
+            href="https://www.linkedin.com/in/chee-yung-peh-1228231b0/"
+            target="_blank"
+            rel="noopener noreferrer">
+            <svg
+              width="32"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 448 512"
+              aria-labelledby="LinkedInTitle"
+              role="img">
+              <title id="LinkedInTitle">LinkedIn</title>
+              <path fill="currentColor" d="M100.3 480H7.4V180.9h92.9V480zM53.8 140.1C24.1 140.1 0 115.5 0 85.8 0 56.1 24.1 32 53.8 32c29.7 0 53.8 24.1 53.8 53.8 0 29.7-24.1 54.3-53.8 54.3zM448 480h-92.7V334.4c0-34.7-.7-79.2-48.3-79.2-48.3 0-55.7 37.7-55.7 76.7V480h-92.8V180.9h89.1v40.8h1.3c12.4-23.5 42.7-48.3 87.9-48.3 94 0 111.3 61.9 111.3 142.3V480z"></path>
+            </svg>
+          </a>
+          <a
+            href="https://substack.com/@murphydeshark"
+            target="_blank"
+            rel="noopener noreferrer">
+            <svg
+              role="img"
+              width="32"
+              height="29"
+              viewBox="0 0 21 24"
+              fill="#FF6719"
+              stroke-width="1.8"
+              stroke="none"
+              xmlns="http://www.w3.org/2000/svg"
+              class="nav-logo-icon">
+              <g>
+                <title></title>
+                <path fill="currentColor" d="M20.9991 5.40625H0V8.24275H20.9991V5.40625Z"></path>
+                <path fill="currentColor" d="M0 10.8125V24.0004L10.4991 18.1107L21 24.0004V10.8125H0Z"></path>
+                <path fill="currentColor" d="M20.9991 0H0V2.83603H20.9991V0Z"></path>
+              </g>
+            </svg>
+          </a>
+        </p>
+      </div>
+    </footer>
+    <!-- JS script at footer to load faster -->
+    <script src="/static/js/toggle-burger.js"></script>
+    
+  </body>
+</html>
