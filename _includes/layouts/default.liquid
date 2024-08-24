@@ -1,3 +1,4 @@
+{%- capture currentUrl %}murphy-shark.github.io{{ page.url }}{% endcapture -%}
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
@@ -5,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="/css/body.css">
     <link rel="stylesheet" href="/css/post.css">
+    <link rel="stylesheet" href="/css/prism-one-dark.css">
+      <!-- icons -->
     <link
       rel="apple-touch-icon"
       sizes="180x180"
@@ -20,7 +23,18 @@
       sizes="16x16"
       href="/static/favicon-16x16.png">
     <link rel="manifest" href="/static/site.webmanifest">
-    <link rel="stylesheet" href="/css/prism-one-dark.css">
+
+      <!-- opengraph -->
+    <meta property="og:title" content="murphy-shark blog site">
+    <meta property="og:type" content="website">
+    <meta property="og:site_map" content="Murphy Shark">
+    <meta property="og:description" content="Murphy the Shark">
+    <meta property="og:image" content="">
+    <meta property="og:url" content="https://murphyshark.github.io/{{ page.url }}">
+
+      <!-- SEO/Feeds -->
+    <link rel="canonical" href="{{ fullUrl }}">
+
   </head>
   <body class="grid gap no-margin border-gradient">
     <nav
@@ -56,7 +70,7 @@
               aria-current="page"
               class="">Home</a>
             <a href="/resume" class="">Resumé</a>
-            <a href="" class="">Archive</a>
+            <a href="/archive" class="">Archive</a>
             <a href="/notes" class="">Notes</a>
             <a
               href="https://github.com/pehcy"
@@ -76,11 +90,11 @@
             <a href="/" class="primary-title">Murphy.</a>
           </h1>
           <article class="about">
-            <p>Hi, I'm Murphy the shark🦈. The name 'Murphy' was based off the well known Murphy's Law,                                                                                                                               
+            <p>Hi, I'm Murphy the shark🦈. The name 'Murphy' was based off the well known Murphy's Law,                                                                                                                                                 
               which state that anything can went wrong will gone wrong.
             </p>
             <p>
-              As a software engineer in network testing R&D Department, my work involve in C# .NET, Java, and Linux development through the use of design systems. I experienced in problem solving and providing solutions for individual entrepreneurs to large companies and everything in between. My background includes experience in computer science, mathematics, web design and technical writting.                                                                                                                                                                                                                             
+              As a software engineer in network testing R&D Department, my work involve in C# .NET, Java, and Linux development through the use of design systems. I experienced in problem solving and providing solutions for individual entrepreneurs to large companies and everything in between. My background includes experience in computer science, mathematics, web design and technical writting.                                                                                                                                                                                                                                               
           In advance, I occasionally give tuition to college students on mathematical subjects (such as Calculus, Statistics, etc.) at my free time.
           Here on linkedIn, you'll find some detailed informations on some of the work I've done throughout my career. Feel free to drop me an email to get in touch.
             </p>
