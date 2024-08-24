@@ -6,6 +6,9 @@
   "scripts": {
     "watch:sass": "sass --watch static/sass:_site/css",
     "build:sass": "sass static/sass:_site/css",
+    "build:sass:prod": "sass static/sass:_site/css --style compressed",
+    "build:eleventy:prod": "ELEVENTY_ENV=production eleventy",
+    "build:prod": "npm run build:eleventy:prod & npm run build:sass:prod",
     "watch:eleventy": "npx @11ty/eleventy --serve",
     "build:eleventy": "npx @11ty/eleventy",
     "start": "npm-run-all build:sass --parallel watch:*",
