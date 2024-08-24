@@ -27,10 +27,10 @@ $gradient: linear-gradient(45deg, #09009f, #ffd5b0 80%);
 body {
     unicode-bidi: isolate;
     min-height: 100vh;
-    font-size: 1.1875em;
+    font-size: 1.10832em; /* 14px */
+    line-height: 1.85rem; /* 20px */
     font-weight: 400;
     font-family: 'Inter Regular', sans-serif;
-    line-height: 1.65;
     color: #525252;
     text-rendering: optimizeLegibility;
     padding-top: 8.72725rem;
@@ -343,6 +343,14 @@ $burgerStripesLineHeight: 6px, 1px, -4px;
     margin-top: 3.25rem;
     font-size: 1.25rem;
     line-height: 1.25rem;
+    display: block;
+}
+
+@include respond(md) {
+    body {
+        font-size: 1.1875em; /* 16px */
+        line-height: 1.65; /* 24px */
+    }
 }
 
 @include respond(lg) {
