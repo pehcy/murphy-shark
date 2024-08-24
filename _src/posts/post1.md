@@ -5,7 +5,6 @@ permalink: /blog/{{ title | slug }}/
 date: 2023-12-18
 layout: layouts/blog.liquid
 timetoread: 5 min
-featuredimage: /assets/images/hero01.png
 
 tags:
     - posts
@@ -48,8 +47,6 @@ A candlestick (or ticker) is a graphical way of representing the Open, High, Low
 You might saw a candlestick chart before, you may observed that the candles are filled with only two colors: red (bullish) and green (bearish). The bullish candlestick with solid background (or red color) denoted that the close price is higher than the open price, and vice versa for bearish candlestick. 
 
 The open and close values correspond to the price of first trade and last trade, respectively.
-
-![./hero01.png](./hero01.png)
 
 # Gets your hands dirty
 
@@ -172,8 +169,6 @@ Now you can see that the original data table now included the lagged returns and
 ```python
 df[cols + ['direction']].head()
 ```
-
-[Untitled Database](Analyze%20Ticker%20with%20Machine%20Learning%20approach%2085667f263b9149dbb6b63ddff0b8cfc5/Untitled%20Database%20caa441948be24499855bc2e2a7333e3a.csv)
 
 To make prediction on the price movement. You can apply several supervised learning algorithms on our time series. Recall that a supervised learning algorithms are intentionally to perform classification, it required features and label data. 
 
