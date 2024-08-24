@@ -51,6 +51,26 @@
      -ms-hyphens: none;
      hyphens: none;
  }
+
+ code {
+	background: #2E3440;
+	padding: .1em;
+	border-radius: .3em;
+	white-space: normal;
+}
+
+ pre::-webkit-scrollbar {
+    height: calc(2 * 0.3rem);
+ }
+
+ pre::-webkit-scrollbar-track {
+    background: 0 0;
+ }
+
+ pre::-webkit-scrollbar-thumb {
+    background: linear-gradient(to right, #e62, #0dd);
+    border-radius: 100vw;
+ }
  
  /* Selection */
  code[class*="language-"]::-moz-selection,

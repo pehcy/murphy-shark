@@ -281,5 +281,5 @@ See you then!
 
 ## References
 
-1. J.Kuepper. (2021). *Using the Kelly Criterion for Asset Allocation and Money Management*. Investopedia. [https://www.investopedia.com/articles/trading/04/091504.asp](https://www.investopedia.com/articles/trading/04/091504.asp)
+1. J.Kuepper. (2021). *Using the Kelly Criterion for Asset Allocation and Money Management*. [Investopedia](https://www.investopedia.com/articles/trading/04/091504.asp)
 2. Y. Hilpisch. (2019). *Python for Finance: Mastering Data-driven Finance (2nd ed.)*. O’ Reilly

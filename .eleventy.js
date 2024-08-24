@@ -1,7 +1,11 @@
+const syntaxHighlight = require("@11ty/eleventy-plugin-syntaxhighlight");
+
 module.exports = function(eleventyConfig) {
     eleventyConfig.setBrowserSyncConfig({
         files: './_site/css/**/*.css'
     });
+
+    eleventyConfig.addPlugin(syntaxHighlight);
 
     eleventyConfig.addPassthroughCopy({ "img/": "img" });
     eleventyConfig.addPassthroughCopy({ "static/": "static" });

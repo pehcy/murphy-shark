@@ -19,7 +19,7 @@
 
 * {
     box-sizing: border-box;
-    display: block;
+    // display: block;
 }
 
 $gradient: linear-gradient(45deg, #09009f, #ffd5b0 80%);
@@ -165,6 +165,7 @@ footer {
 .social-links > a {
     color: #dbdbdb;
     display: inline-block;
+    padding: 17.25px 17.25px 0;
 }
 
 /*
