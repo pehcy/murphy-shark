@@ -25,4 +25,3 @@ jobs:
         run: |
           npm ci
           npm run build
-          rm -rf ./_site/static/sass
