@@ -9,7 +9,7 @@ module.exports = function(eleventyConfig) {
 
     eleventyConfig.addPassthroughCopy({ "img/": "img" });
     eleventyConfig.addPassthroughCopy({ "static/": "static" });
-    eleventyConfig.addPassthroughCopy({ "static/fonts": "static/fonts" });
+    eleventyConfig.addPassthroughCopy({ "static/fonts": "fonts" });
     eleventyConfig.addPassthroughCopy({"static/js": "static/js"});
 
     eleventyConfig.addLayoutAlias("default", "layouts/default.liquid");
