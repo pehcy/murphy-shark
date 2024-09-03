@@ -8,7 +8,6 @@ module.exports = function(eleventyConfig) {
     eleventyConfig.addPlugin(syntaxHighlight);
 
     eleventyConfig.addPassthroughCopy({ "img/": "img" });
-    // eleventyConfig.addPassthroughCopy({ "static/": "static" });
     eleventyConfig.addPassthroughCopy({ "static/fonts": "fonts" });
     eleventyConfig.addPassthroughCopy({"static/js": "static/js"});
     eleventyConfig.addPassthroughCopy({"static/img": "static/img"});
