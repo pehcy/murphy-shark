@@ -12,10 +12,10 @@ module.exports = function(eleventyConfig) {
     eleventyConfig.addPassthroughCopy({ "static/fonts": "fonts" });
     eleventyConfig.addPassthroughCopy({"static/js": "static/js"});
     eleventyConfig.addPassthroughCopy({"static/img": "static/img"});
+    eleventyConfig.addPassthroughCopy({"robots.txt": "robots.txt"});
 
     eleventyConfig.addLayoutAlias("default", "layouts/default.liquid");
     eleventyConfig.addLayoutAlias("blog", "layouts/blog.liquid");
-
 
     /* template engine configurations */
     return {
