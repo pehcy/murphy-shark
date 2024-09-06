@@ -35,13 +35,22 @@
       href="/static/img/android-chrome-512x512.png">
     <link rel="manifest" href="/static/img/site.webmanifest">
 
-      <!-- opengraph -->
+    <!-- opengraph -->
+    {%- capture siteMetadesc %}{% if metadescription %}{{ metadescription }}, post by MurphyShark(pehcy){% else %}{{ site.description }}{% endif %}{% endcapture -%}
+    <meta name="author" content="pehcy - MurphyShark">
+    <meta name="title" content="{{ title }}">
+    <meta name="description" content="{{ siteMetadesc }}">
     <meta property="og:title" content="murphy-shark blog site">
     <meta property="og:type" content="website">
     <meta property="og:site_map" content="Murphy Shark">
-    <meta property="og:description" content="Murphy the Shark">
-    <meta property="og:image" content="">
+    <meta property="og:description" content="{{ siteMetadesc }}">
+    <meta property="og:image" content="{{ site.url | append: site.image }}">
     <meta property="og:url" content="https://murphyshark.vercel.app{{ page.url }}">
+    <meta property="twitter:card" content="Murphy Shark">
+    <meta property="twitter:url" content="https://murphyshark.vercel.app{{ page.url }}">
+    <meta property="twitter:title" content="{{ title }}">
+    <meta property="twitter:description" content="{{ siteMetadesc }}">
+    <meta property="twitter:image" content="{{ site.url | append: site.image }}">
 
       <!-- SEO/Feeds -->
     <link rel="canonical" href="{{ fullUrl }}">
@@ -101,11 +110,11 @@
             <a href="/" class="primary-title">Murphy.</a>
           </h1>
           <article class="about">
-            <p>Hi, I'm Murphy the shark🦈. The name 'Murphy' was based off the well known Murphy's Law,                                                                                                                                                                                             
+            <p>Hi, I'm Murphy the shark🦈. The name 'Murphy' was based off the well known Murphy's Law,                                                                                                                                                                                                                                   
               which state that anything can went wrong will gone wrong.
             </p>
             <p>
-              As a software engineer in network testing R&D Department, my work involve in C# .NET, Java, and Linux development through the use of design systems. I experienced in problem solving and providing solutions for individual entrepreneurs to large companies and everything in between. My background includes experience in computer science, mathematics, web design and technical writting.                                                                                                                                                                                                                                                                                           
+              As a software engineer in network testing R&D Department, my work involve in C# .NET, Java, and Linux development through the use of design systems. I experienced in problem solving and providing solutions for individual entrepreneurs to large companies and everything in between. My background includes experience in computer science, mathematics, web design and technical writting.                                                                                                                                                                                                                                                                                                                                 
           In advance, I occasionally give tuition to college students on mathematical subjects (such as Calculus, Statistics, etc.) at my free time.
           Here on linkedIn, you'll find some detailed informations on some of the work I've done throughout my career. Feel free to drop me an email to get in touch.
             </p>
