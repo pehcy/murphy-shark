@@ -346,10 +346,39 @@ $burgerStripesLineHeight: 6px, 1px, -4px;
     display: block;
 }
 
+.notes-details {
+    display: flex;
+    flex-direction: column;
+    margin-top: 1.25rem;
+}
+
+.notes-details > p {
+    font-weight: 600;
+    font-size: smaller;
+}
+
+.notes-details-summary {
+    display: flex;
+}
+
+.notes-details-summary > a {
+    margin-left: 2rem;
+}
+
 @include respond(md) {
     body {
         font-size: 1.1875em; /* 16px */
         line-height: 1.65; /* 24px */
+    }
+
+    .notes-details {
+        justify-content: space-between;
+        flex-direction: row;
+    }
+
+    .notes-details-summary > a {
+        margin-top: auto; 
+        margin-bottom: auto;
     }
 }
 
